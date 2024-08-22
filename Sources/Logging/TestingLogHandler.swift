@@ -162,38 +162,15 @@ public struct TestingLogHandler: LogHandler, Sendable {
     private static let queue = DispatchQueue(label: "TestingLogHandler")
 
     // Guarded by queue:
-    private static var isInitialized = false
-    // Guarded by queue:
     private static var logLevel: Logger.Level = .info
     // Guarded by queue:
     private static var _containers: [Weak<Container>] = []
-
-    public static func bootstrap() {
-        queue.sync {
-            if !isInitialized {
-                isInitialized = true
-                LoggingSystem.bootstrap(Self.init)
-            }
-        }
-    }
-
-    internal static func bootstrapInternal() {
-        queue.sync {
-            if !isInitialized {
-                isInitialized = true
-                LoggingSystem.bootstrapInternal({ TestingLogHandler(label: $0) })
-            }
-        }
-    }
 
     // Call in order to create a container of log messages which will only
     // contain messages that match the filter.
     public static func container(_ filter: @escaping Filter) -> Container {
         let container = Container(filter)
         queue.sync {
-            if !isInitialized {
-                fatalError("You must call TestingLogHandler.bootstrap() first. Ideally in your `override class func setUp() {...}")
-            }
             Self._containers.append(Weak(container))
         }
         return container

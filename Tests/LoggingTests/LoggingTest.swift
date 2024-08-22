@@ -643,7 +643,7 @@ class LoggingTest: XCTestCase {
 
     func testLoggerWithFactoryOverrideDefaultsToUsingLoggingSystemMetadataProvider() {
         let logging = TestLogging()
-        LoggingSystem.bootstrapInternal({ logging.makeWithMetadataProvider(label: $0, metadataProvider: $1) },
+        DelegatedLogHandler.bootstrap({ logging.makeWithMetadataProvider(label: $0, metadataProvider: $1) },
                                         metadataProvider: .init { ["provider": "42"] })
 
         let logger = Logger(label: #function, factory: { label in
@@ -655,7 +655,7 @@ class LoggingTest: XCTestCase {
         logging.history.assertExist(level: .info,
                                     message: "test",
                                     metadata: ["provider": "42", "one-off": "42"])
-        LoggingSystem.bootstrapInternal({ StreamLogHandler.standardError(label: $0) })
+        DelegatedLogHandler.bootstrap({ StreamLogHandler.standardError(label: $0) })
     }
 
     func testMultiplexerIsValue() {
